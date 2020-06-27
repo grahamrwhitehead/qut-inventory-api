@@ -61,6 +61,17 @@ class InventoryApiControllerTest {
     }
 
     @Test
+    void inventoryGetForbiddenUser() throws Exception {
+        mockMvc
+            .perform(
+                get(INVENTORY_GET_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, BASIC + Base64Utils.encodeToString(("forbiddenUser1:password").getBytes()))
+            )
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
     void inventoryGetValidUserInvalidPassword() throws Exception {
         mockMvc
             .perform(
@@ -174,6 +185,17 @@ class InventoryApiControllerTest {
     }
 
     @Test
+    void inventoryIdGetForbiddenUser() throws Exception {
+        mockMvc
+            .perform(
+                get(INVENTORY_ID_GET_URL, STAR_DESTROYER_INV_ITEM_NO)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, BASIC + Base64Utils.encodeToString(("forbiddenUser1:password").getBytes()))
+            )
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
     void inventoryIdGetValidUserInvalidPassword() throws Exception {
         mockMvc
             .perform(
@@ -223,16 +245,26 @@ class InventoryApiControllerTest {
 
     @Test
     void inventoryPostInvalidUser() throws Exception {
-        val inventoryItem = new InventoryItem();
-
         mockMvc
             .perform(
                 post(INVENTORY_POST_URL)
                     .contentType(MediaType.APPLICATION_JSON)
                     .header(HttpHeaders.AUTHORIZATION, BASIC + Base64Utils.encodeToString(("user4:password").getBytes()))
-                    .content(objectMapper.writeValueAsString(inventoryItem))
+                    .content(objectMapper.writeValueAsString(new InventoryItem()))
             )
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void inventoryPostForbiddenUser() throws Exception {
+        mockMvc
+            .perform(
+                post(INVENTORY_POST_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, BASIC + Base64Utils.encodeToString(("forbiddenUser1:password").getBytes()))
+                    .content(objectMapper.writeValueAsString(new InventoryItem()))
+            )
+            .andExpect(status().isForbidden());
     }
 
     @Test

@@ -37,7 +37,7 @@ public class InventoryApiApplication {
             http
                 .authorizeRequests()
                     .antMatchers("/h2-console/**").permitAll()
-                    .anyRequest().authenticated().and()
+                    .anyRequest().hasRole("USER").and()
                 .httpBasic().and()
                 .cors().and()
                 .csrf().disable()
@@ -49,7 +49,8 @@ public class InventoryApiApplication {
             auth.inMemoryAuthentication()
                 .withUser("user1").password("{noop}password").roles("USER").and()
                 .withUser("user2").password("{noop}password").roles("USER").and()
-                .withUser("user3").password("{noop}password").roles("USER");
+                .withUser("user3").password("{noop}password").roles("USER").and()
+                .withUser("forbiddenUser1").password("{noop}password").roles("FORBIDDEN");
         }
     }
 }
