@@ -1,0 +1,4 @@
+{
+    "basePackage":"grw.qut.inventory.api",
+    "configPackage":"grw.qut.inventory.api.config"
+}
