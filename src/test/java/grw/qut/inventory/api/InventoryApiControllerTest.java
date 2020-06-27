@@ -3,6 +3,7 @@ package grw.qut.inventory.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import grw.qut.inventory.model.InventoryItem;
 import grw.qut.inventory.model.Manufacturer;
+import grw.qut.inventory.repository.InventoryItemRepository;
 import lombok.val;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import org.springframework.util.Base64Utils;
 
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -27,9 +30,9 @@ class InventoryApiControllerTest {
 
     private static final String BASIC = "Basic ";
 
-    private static final String INVENTORY_GET_URL = "/inventory";
-    private static final String INVENTORY_ID_GET_URL = "/inventory/{id}";
-    private static final String INVENTORY_POST_URL = "/inventory";
+    private static final String INVENTORY_GET_URL = "/api/inventory";
+    private static final String INVENTORY_ID_GET_URL = "/api/inventory/{id}";
+    private static final String INVENTORY_POST_URL = "/api/inventory";
 
     private static final String STAR_DESTROYER_INV_ITEM_NO = "75252";
 
@@ -38,6 +41,9 @@ class InventoryApiControllerTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private InventoryItemRepository inventoryItemRepository;
 
     @Test
     void inventoryGetNoAuthorizationHeader() throws Exception {
@@ -317,7 +323,7 @@ class InventoryApiControllerTest {
     }
 
     @Test
-    void inventoryPostValidUserValidPasswordValidPayload() throws Exception {
+    void inventoryPostValidUserValidPasswordValidPayloadExistingManufacturer() throws Exception {
         val inventoryItem = new InventoryItem()
             .id("75288")
             .name("AT-AT")
@@ -335,5 +341,44 @@ class InventoryApiControllerTest {
                     .content(objectMapper.writeValueAsString(inventoryItem))
             )
             .andExpect(status().isCreated());
+
+        val savedInventoryItem = inventoryItemRepository.findByInvItemNo("75288");
+
+        assertNotNull(savedInventoryItem);
+        assertEquals(inventoryItem.getId(), savedInventoryItem.getInvItemNo());
+        assertEquals(inventoryItem.getReleaseDate(), savedInventoryItem.getReleaseDate());
+        assertEquals(inventoryItem.getManufacturer().getName(), savedInventoryItem.getManufacturer().getName());
+        assertEquals(inventoryItem.getManufacturer().getHomePage(), savedInventoryItem.getManufacturer().getHomePage());
+        assertEquals(inventoryItem.getManufacturer().getPhone(), savedInventoryItem.getManufacturer().getPhone());
+    }
+
+    @Test
+    void inventoryPostValidUserValidPasswordValidPayloadNewManufacturer() throws Exception {
+        val inventoryItem = new InventoryItem()
+            .id("X21-36221-03")
+            .name("Xbox One X")
+            .releaseDate(LocalDate.parse("2013-11-22"))
+            .manufacturer(new Manufacturer()
+                .name("Microsoft")
+                .homePage("https://www.xbox.com/en-AU")
+                .phone("05 4338 1763"));
+
+        mockMvc
+            .perform(
+                post(INVENTORY_POST_URL)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .header(HttpHeaders.AUTHORIZATION, BASIC + Base64Utils.encodeToString(("user1:password").getBytes()))
+                    .content(objectMapper.writeValueAsString(inventoryItem))
+            )
+            .andExpect(status().isCreated());
+
+        val savedInventoryItem = inventoryItemRepository.findByInvItemNo("X21-36221-03");
+
+        assertNotNull(savedInventoryItem);
+        assertEquals(inventoryItem.getId(), savedInventoryItem.getInvItemNo());
+        assertEquals(inventoryItem.getReleaseDate(), savedInventoryItem.getReleaseDate());
+        assertEquals(inventoryItem.getManufacturer().getName(), savedInventoryItem.getManufacturer().getName());
+        assertEquals(inventoryItem.getManufacturer().getHomePage(), savedInventoryItem.getManufacturer().getHomePage());
+        assertEquals(inventoryItem.getManufacturer().getPhone(), savedInventoryItem.getManufacturer().getPhone());
     }
 }

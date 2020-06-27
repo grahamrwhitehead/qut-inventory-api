@@ -6,6 +6,7 @@ import org.springframework.boot.ExitCodeGenerator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -30,14 +31,16 @@ public class InventoryApiApplication {
     }
 
     @Configuration
-    public static class SecurityConfig extends WebSecurityConfigurerAdapter {
+    @Order(1)
+    public static class ApiSecurityConfig extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(final HttpSecurity http) throws Exception {
             http
+                .requestMatchers().antMatchers("/api/**")
+                .and()
                 .authorizeRequests()
-                    .antMatchers("/h2-console/**").permitAll()
-                    .anyRequest().hasRole("USER").and()
+                .anyRequest().hasRole("USER").and()
                 .httpBasic().and()
                 .cors().and()
                 .csrf().disable()
@@ -53,4 +56,20 @@ public class InventoryApiApplication {
                 .withUser("forbiddenUser1").password("{noop}password").roles("FORBIDDEN");
         }
     }
+
+    @Configuration
+    @Order(2)
+    public static class OtherSecurityConfig extends WebSecurityConfigurerAdapter {
+
+        @Override
+        protected void configure(final HttpSecurity http) throws Exception {
+            http
+                .authorizeRequests()
+                .anyRequest().permitAll().and()
+                .cors().disable()
+                .csrf().disable()
+                .headers().frameOptions().disable();
+        }
+    }
 }
+

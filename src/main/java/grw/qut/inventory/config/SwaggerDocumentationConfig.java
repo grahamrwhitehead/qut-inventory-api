@@ -1,6 +1,5 @@
 package grw.qut.inventory.config;
 
-import org.joda.time.DateTime;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
@@ -15,8 +14,6 @@ import javax.annotation.Generated;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import static springfox.documentation.builders.PathSelectors.regex;
 
 @Generated(value = "class io.swagger.codegen.languages.SpringCodegen", date = "2020-06-26T20:48:51.890+10:00")
 @Configuration
